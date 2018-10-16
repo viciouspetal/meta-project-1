@@ -5,8 +5,9 @@ Author: Joanna Wojcik
 file:
 """
 
-from Individual import *
 import sys
+
+from Individual import *
 
 
 class BasicTSP:
@@ -80,16 +81,41 @@ class BasicTSP:
         """
         Your Uniform Crossover Implementation
         """
-        pass
+
+
+        keepGenesA = self.pickGenesToKeep(indA, 50)
+        keepGenesB = self.pickGenesToKeep(indB, 50)
+
+        print("indA genes are: {0} ".format(indA.genes))
+        print("keep genes A is: {0} ".format(keepGenesA))
+
+    def pickGenesToKeep(self, genesList, chanceToKeep):
+        """
+        Randomly picks genes, to be retained in the list. The probability of keeping the gene is mutable. Genes
+
+        :param genesList: list of genes to be filtered
+        :param chanceToKeep: the probability required to keep the gene
+        :return: list of retained genes
+        """
+        keepGenes = []
+        for i in range(0, self.genSize):
+            #    print(indA.genes[i])
+            if random.randint(0, 100) > chanceToKeep:
+                keepGenes.append(genesList.genes[i])
+            else:
+                keepGenes.append(None)
+
+        return keepGenes
 
     def cycleCrossover(self, indA, indB):
         """
         Your Cycle Crossover Implementation
         """
         pass
+
     def reciprocalExchangeMutation(self, ind):
         """
-         Mutate an individual by swaping two cities with certain probability (i.e., mutation rate)
+         Mutate an individual by swapping two cities with certain probability (i.e., mutation rate)
          """
         if random.random() > self.mutationRate:
             return
@@ -184,7 +210,7 @@ class BasicTSP:
             3. Apply Mutation
             """
             [ind1, ind2] = self.randomSelection()
-            child = self.crossover(ind1, ind2)
+            child = self.uniformCrossover(ind1, ind2)
             self.population[i].setGene(child)
             self.scrambleMutation(self.population[i])
 
