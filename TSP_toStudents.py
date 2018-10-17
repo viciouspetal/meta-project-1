@@ -67,8 +67,8 @@ class BasicTSP:
         """
         Random (uniform) selection of two individuals
         """
-        indA = self.matingPool[ random.randint(0, self.popSize-1) ]
-        indB = self.matingPool[ random.randint(0, self.popSize-1) ]
+        indA = self.matingPool[random.randint(0, self.popSize-1)]
+        indB = self.matingPool[random.randint(0, self.popSize-1)]
         return [indA, indB]
 
     def rouletteWheel(self):
@@ -79,15 +79,29 @@ class BasicTSP:
 
     def uniformCrossover(self, indA, indB):
         """
-        Your Uniform Crossover Implementation
+        Randomly selects genes of an individual that will not change. The remaining positions are filled with the copy
+        from the alternative parent in order of appearance. Genes from alternative parent that are already present in
+        the candidate individual will not be copied.
+
+        :param indA: parent individual A
+        :param indB: parent individual A
+        :return: new individuals A & B
         """
 
+        newInd = self.pickGenesToKeep(indA, 50)
 
-        keepGenesA = self.pickGenesToKeep(indA, 50)
-        keepGenesB = self.pickGenesToKeep(indB, 50)
+        # check if there is an intersection of values between parent B and new individual (based off of parent A)
+        # if there is those are the values that will NOT be moved to the new individual
 
-        print("indA genes are: {0} ".format(indA.genes))
-        print("keep genes A is: {0} ".format(keepGenesA))
+        differenceBetweenParentBAndCandidateA = set(indB.genes) - set(newInd)
+        print('Difference between parent B and candidate A {0}'.format(differenceBetweenParentBAndCandidateA))
+
+        parentBIndexToValue = {}
+
+        for i in differenceBetweenParentBAndCandidateA:
+            indexOfGeneInParent = list(indB.genes).index(differenceBetweenParentBAndCandidateA[i])
+            parentBIndexToValue[differenceBetweenParentBAndCandidateA[i]] = indexOfGeneInParent
+
 
     def pickGenesToKeep(self, genesList, chanceToKeep):
         """
