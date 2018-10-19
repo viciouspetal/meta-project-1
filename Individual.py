@@ -19,6 +19,7 @@ class Individual:
         self.genes      = []
         self.genSize    = _size
         self.data       = _data
+        self.selectionWeight = 0
 
         self.genes = list(self.data.keys())
 
@@ -28,6 +29,9 @@ class Individual:
             tmp = self.genes[n2]
             self.genes[n2] = self.genes[n1]
             self.genes[n1] = tmp
+
+    def setSelectionWeight(self, weight):
+        self.selectionWeight = weight
 
     def setGene(self, genes):
         """

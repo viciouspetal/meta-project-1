@@ -74,18 +74,65 @@ class BasicTSP:
 
     def rouletteWheel(self):
         """
-        Your Roulette Wheel Selection Implementation
+        Constructs roulette wheel selection process. Enables selecting 2 best candidates for mating
+        :return: 2 best candidates
         """
-        indA = None
-        indB = None
+        totalFitness = self.computeTotalFitness()
 
-        totalFitness = 0
+        rouletteWheel = self.constructTheRouletteWheel()
 
-        for i in range(0, len(self.matingPool)):
-            totalFitness += self.matingPool[i].fitness
+        return self.spinRouletteWheel(rouletteWheel, totalFitness)
 
-        print('total fitness {0}'.format(totalFitness))
+    def spinRouletteWheel(self, weightedSelectionSpace, endOfSelectionSpace):
+        """
+        Simulates spinning of a roulette wheel in order to select 2 best candidates.
+
+        :param weightedSelectionSpace: roulette wheel with weights of the selection probability applied
+        :param endOfSelectionSpace: sum of the individual fitness parameters. Marks the end of the selection space
+        :return: 2 best candidates
+        """
+        spin1 = random.uniform(0, endOfSelectionSpace)
+        spin2 = random.uniform(0, endOfSelectionSpace)
+
+        for i in weightedSelectionSpace:
+            if spin1 >= weightedSelectionSpace[i]["begin"] and spin1 < weightedSelectionSpace[i]["end"]:
+                indA = self.matingPool[weightedSelectionSpace[i]["position"]]
+            if spin2 >= weightedSelectionSpace[i]["begin"] and spin2 < weightedSelectionSpace[i]["end"]:
+                indB = self.matingPool[weightedSelectionSpace[i]["position"]]
+
         return [indA, indB]
+
+    def computeTotalFitness(self):
+        """
+        Since the objective is to minimize the cost function, which is the distance between cities in the final solution
+        the fitness value needs to be transformed to promote the candidates with the smallest distance between the cities.
+
+        Additionally the total value of fitness will be computed.
+
+        :return: total fitness value for the population
+        """
+        totalFitness = 0
+        for i in range(0, len(self.matingPool)):
+            transformedFitness = 1/self.matingPool[i].fitness
+            self.matingPool[i].setSelectionWeight(transformedFitness)
+            totalFitness += transformedFitness
+            #print('selection weight {0}'.format(self.matingPool[i].selectionWeight))
+        return totalFitness
+
+    def constructTheRouletteWheel(self):
+        """
+        Computes the roulette wheel with individuals assigned a weight, determining the probability of them being
+        selected. The larger the weight the greater the chance of the individual being selected.
+
+        :return: constructed wheel
+        """
+        runningTotal = 0
+        wheel = {}
+        for i in range(0, len(self.matingPool)):
+            end = self.matingPool[i].selectionWeight + runningTotal
+            wheel[i] = {"position": i, "begin": runningTotal, "end": end}
+            runningTotal = end
+        return wheel
 
     def uniformCrossover(self, indA, indB):
         """
