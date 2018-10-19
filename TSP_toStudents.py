@@ -69,13 +69,23 @@ class BasicTSP:
         """
         indA = self.matingPool[random.randint(0, self.popSize-1)]
         indB = self.matingPool[random.randint(0, self.popSize-1)]
+
         return [indA, indB]
 
     def rouletteWheel(self):
         """
         Your Roulette Wheel Selection Implementation
         """
-        pass
+        indA = None
+        indB = None
+
+        totalFitness = 0
+
+        for i in range(0, len(self.matingPool)):
+            totalFitness += self.matingPool[i].fitness
+
+        print('total fitness {0}'.format(totalFitness))
+        return [indA, indB]
 
     def uniformCrossover(self, indA, indB):
         """
@@ -85,22 +95,20 @@ class BasicTSP:
 
         :param indA: parent individual A
         :param indB: parent individual A
-        :return: new individuals A & B
+        :return: new individual
         """
 
-        newInd = self.pickGenesToKeep(indA, 50)
+        newIndBasedOnParentA = self.pickGenesToKeep(indA, 50)
 
         # check if there is an intersection of values between parent B and new individual (based off of parent A)
         # if there is those are the values that will NOT be moved to the new individual
 
-        differenceBetweenParentBAndCandidateA = set(indB.genes) - set(newInd)
-        print('Difference between parent B and candidate A {0}'.format(differenceBetweenParentBAndCandidateA))
+        for i in range(0, self.genSize):
+            if not indB.genes[i] in newIndBasedOnParentA:
+                nextFreeSlot = next(i for i,v in enumerate(newIndBasedOnParentA) if v == -1)
+                newIndBasedOnParentA[nextFreeSlot] = indB.genes[i]
 
-        parentBIndexToValue = {}
-
-        for i in differenceBetweenParentBAndCandidateA:
-            indexOfGeneInParent = list(indB.genes).index(differenceBetweenParentBAndCandidateA[i])
-            parentBIndexToValue[differenceBetweenParentBAndCandidateA[i]] = indexOfGeneInParent
+        return newIndBasedOnParentA
 
 
     def pickGenesToKeep(self, genesList, chanceToKeep):
@@ -117,7 +125,7 @@ class BasicTSP:
             if random.randint(0, 100) > chanceToKeep:
                 keepGenes.append(genesList.genes[i])
             else:
-                keepGenes.append(None)
+                keepGenes.append(-1)
 
         return keepGenes
 
@@ -185,22 +193,6 @@ class BasicTSP:
         child += aux
         return child
 
-    # def mutation(self, ind):
-    #     """
-    #     Mutate an individual by swaping two cities with certain probability (i.e., mutation rate)
-    #     """
-    #     if random.random() > self.mutationRate:
-    #         return
-    #     indexA = random.randint(0, self.genSize-1)
-    #     indexB = random.randint(0, self.genSize-1)
-    #
-    #     tmp = ind.genes[indexA]
-    #     ind.genes[indexA] = ind.genes[indexB]
-    #     ind.genes[indexB] = tmp
-    #
-    #     ind.computeFitness()
-    #     self.updateBest(ind)
-
     def updateMatingPool(self):
         """
         Updating the mating pool before creating a new generation
@@ -223,7 +215,8 @@ class BasicTSP:
             2. Apply Crossover
             3. Apply Mutation
             """
-            [ind1, ind2] = self.randomSelection()
+            [ind1, ind2] = self.rouletteWheel()
+            #[ind1, ind2] = self.randomSelection() # TODO this is where roulette wheel selection gets plugged into
             child = self.uniformCrossover(ind1, ind2)
             self.population[i].setGene(child)
             self.scrambleMutation(self.population[i])
@@ -257,7 +250,8 @@ if len(sys.argv) < 2:
     sys.exit(0)
 
 
-problem_file = sys.argv[1]
+if __name__ == '__main__':
+    problem_file = sys.argv[1]
 
-ga = BasicTSP(sys.argv[1], 100, 0.1, 300)
-ga.search()
+    ga = BasicTSP(sys.argv[1], 100, 0.1, 300)
+    ga.search()
