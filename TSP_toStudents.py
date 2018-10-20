@@ -9,6 +9,9 @@ import sys
 
 from Individual import *
 
+PARENT_B_KEY = 'parentB'
+PARENT_A_KEY = 'parentA'
+POSITION_KEY = 'position'
 
 class BasicTSP:
     def __init__(self, _fName, _popSize, _mutationRate, _maxIterations):
@@ -94,6 +97,9 @@ class BasicTSP:
         spin1 = random.uniform(0, endOfSelectionSpace)
         spin2 = random.uniform(0, endOfSelectionSpace)
 
+        indA = None
+        indB = None
+
         for i in weightedSelectionSpace:
             if spin1 >= weightedSelectionSpace[i]["begin"] and spin1 < weightedSelectionSpace[i]["end"]:
                 indA = self.matingPool[weightedSelectionSpace[i]["position"]]
@@ -157,7 +163,6 @@ class BasicTSP:
 
         return newIndBasedOnParentA
 
-
     def pickGenesToKeep(self, genesList, chanceToKeep):
         """
         Randomly picks genes, to be retained in the list. The probability of keeping the gene is mutable. Genes
@@ -178,42 +183,78 @@ class BasicTSP:
 
     def cycleCrossover(self, indA, indB):
         """
-        Your Cycle Crossover Implementation
+        The Cycle Crossover implementation.
+
+        The Cycle Crossover operator identifies a number of so-called cycles between two parents.
+        Then, to form Child 1, cycle 1 is copied from parent 1, cycle 2 from parent 2, cycle 3 from parent 1, and so on.
+
+        :param indA: parent individual 1
+        :param indB: parent individual 2
+        :return: an offspring object
         """
-        child = []
 
-        cycleFound = False
+        # later on used to determine in the cycle calculation if a given gene position is free to be filled by a
+        # gene from a parent or not.
+        isPositionFilled = []
 
-        # step 1 identify first cycle
-        first_element_in_a = indA.genes[0]
-        position_of_first_el_of_A_in_B = indB.genes.index(first_element_in_a)
-        element_in_A_at_position_in_B = indA.genes[position_of_first_el_of_A_in_B]
-        if(element_in_A_at_position_in_B == first_element_in_a):
-            cycleFound= True
-        print('cycle tryouts: first element in A: {0}, position of 1st A element in B {1}, \n element at position {1} in A is {2}. \n cycle found? {3}'
-              .format(first_element_in_a, position_of_first_el_of_A_in_B, element_in_A_at_position_in_B, cycleFound))
+        # offspring objects
+        child1 = []
+        child2 = []
 
+        # initialize position availability list, child1 and child2 objects
+        for i in range(0, self.genSize):
+            isPositionFilled.append(False)
+            child1.append(None)
+            child2.append(None)
 
-        cycles = {}
-        for i in len(indA.genes):
-            cycle = []
-            first_element_in_A = indA.genes[0]
-            cycle.append(first_element_in_A)
+        # For the benefit of performance, need to rely on hash table, or in python terms dictionary
+        # for fast lookup of index values of each gene
+        geneLookup = self.generate_cx_parent_lookup(indA.genes, indB.genes)
 
-            while cycleFound== False:
-                position_of_element_from_A_in_B = indB.genes.index(indA.genes[i])
-                cycle.append(position_of_element_from_A_in_B)
+        # Compute all the cycles
+        cycleTable = self.generate_all_cycles(geneLookup, indA.genes, isPositionFilled)
 
-                element_in_A_at_position_in_B = indA.genes[position_of_element_from_A_in_B]
-                cycle.append(element_in_A_at_position_in_B)
-
-                element_in_B_at_position_A = indB.genes.index[element_in_A_at_position_in_B]
-
-                if(element_in_A_at_position_in_B == first_element_in_a):
-                    cycleFound= True
+        # Alternate cycles to populate the offspring/child objects
+        counter = 0
+        for cycle in cycleTable:
+            for pair in cycle:
+                if counter % 2 == 0:
+                    child1[pair[POSITION_KEY]] = pair[PARENT_A_KEY]
+                    child2[pair[POSITION_KEY]] = pair[PARENT_B_KEY]
                 else:
-                    position_of_element_from_A_in_B = indA.genes.index()
-        return child
+                    child1[pair[POSITION_KEY]] = pair[PARENT_B_KEY]
+                    child2[pair[POSITION_KEY]] = pair[PARENT_A_KEY]
+            counter += 1
+
+        return child1
+
+    def generate_all_cycles(self, geneLookup, indAGenes, isPositionFilled):
+        cycleTable = []
+        for i in range(0, self.genSize):
+            temporaryCycle = []
+
+            # Making sure that given value is not already in another cycle
+            if not isPositionFilled[i]:
+                cycleStart = indAGenes[i]
+                temporaryPair = geneLookup[indAGenes[i]]
+                temporaryCycle.append(temporaryPair)
+                isPositionFilled[temporaryPair[POSITION_KEY]] = True
+
+                # appending temporary pair B to the temp cycle
+                while not temporaryPair[PARENT_B_KEY] == cycleStart:
+                    temporaryPair = geneLookup[temporaryPair[PARENT_B_KEY]]
+                    isPositionFilled[temporaryPair[POSITION_KEY]] = True
+                    temporaryCycle.append(temporaryPair)
+
+                cycleTable.append(temporaryCycle)
+        return cycleTable
+
+    def generate_cx_parent_lookup(self, ind_a_genes, ind_b_genes):
+        geneLookup = {}
+        for i in range(0, self.genSize):
+            geneLookup[ind_a_genes[i]] = {PARENT_A_KEY: ind_a_genes[i], PARENT_B_KEY: ind_b_genes[i], POSITION_KEY: i}
+            #print('lookup {0}'. format(geneLookup[ind_a_genes[i]]))
+        return geneLookup
 
     def reciprocalExchangeMutation(self, ind):
         """
@@ -246,6 +287,7 @@ class BasicTSP:
         random.shuffle(toBeShuffled)
         ind.genes[indexA:indexB] = toBeShuffled
 
+        #print('scramble mutation. ind genes {0}'.format(ind.genes))
         ind.computeFitness()
         self.updateBest(ind)
 
@@ -298,10 +340,10 @@ class BasicTSP:
             [ind1, ind2] = self.rouletteWheel()
             # TODO need to figure out a nice way to specify different configurations
             # [ind1, ind2] = self.randomSelection()
-            # child = self.uniformCrossover(ind1, ind2)
+            #child = self.uniformCrossover(ind1, ind2)
             child = self.cycleCrossover(ind1, ind2)
-            #self.population[i].setGene(child)
-            #self.scrambleMutation(self.population[i])
+            self.population[i].setGene(child)
+            self.scrambleMutation(self.population[i])
 
     def GAStep(self):
         """
@@ -335,6 +377,6 @@ if len(sys.argv) < 2:
 if __name__ == '__main__':
     problem_file = sys.argv[1]
 
-    #ga = BasicTSP(sys.argv[1], 100, 0.1, 300)
-    ga = BasicTSP(sys.argv[1], 10, 0.1, 1)
+    ga = BasicTSP(sys.argv[1], 100, 0.1, 300)
+    #ga = BasicTSP(sys.argv[1], 10, 0.1, 300)
     ga.search()
