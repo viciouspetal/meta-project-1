@@ -180,7 +180,40 @@ class BasicTSP:
         """
         Your Cycle Crossover Implementation
         """
-        pass
+        child = []
+
+        cycleFound = False
+
+        # step 1 identify first cycle
+        first_element_in_a = indA.genes[0]
+        position_of_first_el_of_A_in_B = indB.genes.index(first_element_in_a)
+        element_in_A_at_position_in_B = indA.genes[position_of_first_el_of_A_in_B]
+        if(element_in_A_at_position_in_B == first_element_in_a):
+            cycleFound= True
+        print('cycle tryouts: first element in A: {0}, position of 1st A element in B {1}, \n element at position {1} in A is {2}. \n cycle found? {3}'
+              .format(first_element_in_a, position_of_first_el_of_A_in_B, element_in_A_at_position_in_B, cycleFound))
+
+
+        cycles = {}
+        for i in len(indA.genes):
+            cycle = []
+            first_element_in_A = indA.genes[0]
+            cycle.append(first_element_in_A)
+
+            while cycleFound== False:
+                position_of_element_from_A_in_B = indB.genes.index(indA.genes[i])
+                cycle.append(position_of_element_from_A_in_B)
+
+                element_in_A_at_position_in_B = indA.genes[position_of_element_from_A_in_B]
+                cycle.append(element_in_A_at_position_in_B)
+
+                element_in_B_at_position_A = indB.genes.index[element_in_A_at_position_in_B]
+
+                if(element_in_A_at_position_in_B == first_element_in_a):
+                    cycleFound= True
+                else:
+                    position_of_element_from_A_in_B = indA.genes.index()
+        return child
 
     def reciprocalExchangeMutation(self, ind):
         """
@@ -263,10 +296,12 @@ class BasicTSP:
             3. Apply Mutation
             """
             [ind1, ind2] = self.rouletteWheel()
-            #[ind1, ind2] = self.randomSelection() # TODO this is where roulette wheel selection gets plugged into
-            child = self.uniformCrossover(ind1, ind2)
-            self.population[i].setGene(child)
-            self.scrambleMutation(self.population[i])
+            # TODO need to figure out a nice way to specify different configurations
+            # [ind1, ind2] = self.randomSelection()
+            # child = self.uniformCrossover(ind1, ind2)
+            child = self.cycleCrossover(ind1, ind2)
+            #self.population[i].setGene(child)
+            #self.scrambleMutation(self.population[i])
 
     def GAStep(self):
         """
@@ -300,5 +335,6 @@ if len(sys.argv) < 2:
 if __name__ == '__main__':
     problem_file = sys.argv[1]
 
-    ga = BasicTSP(sys.argv[1], 100, 0.1, 300)
+    #ga = BasicTSP(sys.argv[1], 100, 0.1, 300)
+    ga = BasicTSP(sys.argv[1], 10, 0.1, 1)
     ga.search()
