@@ -20,6 +20,7 @@ class Individual:
         self.genSize    = _size
         self.data       = _data
         self.selectionWeight = 0
+        self.selectionRank = 0
 
         self.genes = list(self.data.keys())
 
@@ -32,6 +33,9 @@ class Individual:
 
     def setSelectionWeight(self, weight):
         self.selectionWeight = weight
+
+    def setSelectionRank(self, rank):
+        self.selectionRank = rank
 
     def setGene(self, genes):
         """
