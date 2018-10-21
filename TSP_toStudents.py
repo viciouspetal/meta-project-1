@@ -1,5 +1,3 @@
-
-
 """
 Author: Joanna Wojcik
 file:
@@ -13,26 +11,26 @@ PARENT_B_KEY = 'parentB'
 PARENT_A_KEY = 'parentA'
 POSITION_KEY = 'position'
 
+
 class BasicTSP:
     def __init__(self, _fName, _popSize, _mutationRate, _maxIterations):
         """
         Parameters and general variables
         """
 
-        self.population     = []
-        self.matingPool     = []
-        self.best           = None
-        self.popSize        = _popSize
-        self.genSize        = None
-        self.mutationRate   = _mutationRate
-        self.maxIterations  = _maxIterations
-        self.iteration      = 0
-        self.fName          = _fName
-        self.data           = {}
+        self.population = []
+        self.matingPool = []
+        self.best = None
+        self.popSize = _popSize
+        self.genSize = None
+        self.mutationRate = _mutationRate
+        self.maxIterations = _maxIterations
+        self.iteration = 0
+        self.fName = _fName
+        self.data = {}
 
         self.readInstance()
         self.initPopulation()
-
 
     def readInstance(self):
         """
@@ -59,19 +57,19 @@ class BasicTSP:
         for ind_i in self.population:
             if self.best.getFitness() > ind_i.getFitness():
                 self.best = ind_i.copy()
-        print ("Best initial sol: ",self.best.getFitness())
+        print("Best initial sol: ", self.best.getFitness())
 
     def updateBest(self, candidate):
         if self.best == None or candidate.getFitness() < self.best.getFitness():
             self.best = candidate.copy()
-            print ("iteration: ",self.iteration, "best: ",self.best.getFitness())
+            print("iteration: ", self.iteration, "best: ", self.best.getFitness())
 
     def randomSelection(self):
         """
         Random (uniform) selection of two individuals
         """
-        indA = self.matingPool[random.randint(0, self.popSize-1)]
-        indB = self.matingPool[random.randint(0, self.popSize-1)]
+        indA = self.matingPool[random.randint(0, self.popSize - 1)]
+        indB = self.matingPool[random.randint(0, self.popSize - 1)]
 
         return [indA, indB]
 
@@ -119,10 +117,10 @@ class BasicTSP:
         """
         totalFitness = 0
         for i in range(0, len(self.matingPool)):
-            transformedFitness = 1/self.matingPool[i].fitness
+            transformedFitness = 1 / self.matingPool[i].fitness
             self.matingPool[i].setSelectionWeight(transformedFitness)
             totalFitness += transformedFitness
-            #print('selection weight {0}'.format(self.matingPool[i].selectionWeight))
+            # print('selection weight {0}'.format(self.matingPool[i].selectionWeight))
         return totalFitness
 
     def constructTheRouletteWheel(self):
@@ -158,7 +156,7 @@ class BasicTSP:
 
         for i in range(0, self.genSize):
             if not indB.genes[i] in newIndBasedOnParentA:
-                nextFreeSlot = next(i for i,v in enumerate(newIndBasedOnParentA) if v == -1)
+                nextFreeSlot = next(i for i, v in enumerate(newIndBasedOnParentA) if v == -1)
                 newIndBasedOnParentA[nextFreeSlot] = indB.genes[i]
 
         return newIndBasedOnParentA
@@ -253,7 +251,7 @@ class BasicTSP:
         geneLookup = {}
         for i in range(0, self.genSize):
             geneLookup[ind_a_genes[i]] = {PARENT_A_KEY: ind_a_genes[i], PARENT_B_KEY: ind_b_genes[i], POSITION_KEY: i}
-            #print('lookup {0}'. format(geneLookup[ind_a_genes[i]]))
+            # print('lookup {0}'. format(geneLookup[ind_a_genes[i]]))
         return geneLookup
 
     def reciprocalExchangeMutation(self, ind):
@@ -262,8 +260,8 @@ class BasicTSP:
          """
         if random.random() > self.mutationRate:
             return
-        indexA = random.randint(0, self.genSize-1)
-        indexB = random.randint(0, self.genSize-1)
+        indexA = random.randint(0, self.genSize - 1)
+        indexB = random.randint(0, self.genSize - 1)
 
         tmp = ind.genes[indexA]
         ind.genes[indexA] = ind.genes[indexB]
@@ -279,15 +277,15 @@ class BasicTSP:
         if random.random() > self.mutationRate:
             return
 
-        indexA = random.randint(0, self.genSize-2)
+        indexA = random.randint(0, self.genSize - 2)
         # need to ensure that the end index of the mutation range is greater than the start one
-        indexB = random.randint(indexA + 1, self.genSize-1)
+        indexB = random.randint(indexA + 1, self.genSize - 1)
         toBeShuffled = ind.genes[indexA:indexB]
 
         random.shuffle(toBeShuffled)
         ind.genes[indexA:indexB] = toBeShuffled
 
-        #print('scramble mutation. ind genes {0}'.format(ind.genes))
+        # print('scramble mutation. ind genes {0}'.format(ind.genes))
         ind.computeFitness()
         self.updateBest(ind)
 
@@ -298,8 +296,8 @@ class BasicTSP:
         child = []
         tmp = {}
 
-        indexA = random.randint(0, self.genSize-1)
-        indexB = random.randint(0, self.genSize-1)
+        indexA = random.randint(0, self.genSize - 1)
+        indexB = random.randint(0, self.genSize - 1)
 
         for i in range(0, self.genSize):
             if i >= min(indexA, indexB) and i <= max(indexA, indexB):
@@ -321,29 +319,74 @@ class BasicTSP:
         """
         self.matingPool = []
         for ind_i in self.population:
-            self.matingPool.append( ind_i.copy() )
+            self.matingPool.append(ind_i.copy())
 
     def newGeneration(self):
         """
-        Creating a new generation
+        Creating a new generation by applying the following operations, in order:
         1. Selection
         2. Crossover
         3. Mutation
         """
         for i in range(0, len(self.population)):
             """
-            Depending of your experiment you need to use the most suitable algorithms for:
-            1. Select two candidates
-            2. Apply Crossover
-            3. Apply Mutation
+            Depending menu choice of preset configurations, set up the experiment with appropriate:
+            1. Candidate selection method
+            2. Crossover method
+            3. Mutation method
             """
-            [ind1, ind2] = self.rouletteWheel()
-            # TODO need to figure out a nice way to specify different configurations
-            # [ind1, ind2] = self.randomSelection()
-            #child = self.uniformCrossover(ind1, ind2)
-            child = self.cycleCrossover(ind1, ind2)
+
+            # select appropriate candidates
+            [ind1, ind2] = self.applySelection(BasicTSP.menuChoice)
+
+            # apply crossover mechanism
+            child = self.applyCrossover(BasicTSP.menuChoice, ind1, ind2)
+
             self.population[i].setGene(child)
-            self.scrambleMutation(self.population[i])
+
+            # apply mutation
+            self.applyMutation(BasicTSP.menuChoice, self.population[i])
+
+    def applySelection(self, menuChoice):
+        """
+        Based on configuration choice indicated in menu, select 2 individuals for future operations
+        :param menuChoice: number indicating which of the preset configurations was selected
+        :return: 2 selected individuals
+        """
+        inds = None
+        if menuChoice == 1 or menuChoice == 2:
+            inds = self.randomSelection()
+        elif menuChoice == 3 or menuChoice == 4 or menuChoice == 5:
+            inds = self.rouletteWheel()
+        else:
+            inds = None  # TODO need to get the best and 2nd best candidate selection
+        return [inds[0], inds[1]]
+
+    def applyCrossover(self, menuChoice, ind1, ind2):
+        """
+        Applies the appropriate crossover operator according to menu selection
+        :param menuChoice: number indicating which of the preset configurations was selected
+        :param ind1: parent to be crossed over
+        :param ind2: parent to be crossed over
+        :return: child individual after applied crossover operator
+        """
+        child = None
+        if menuChoice == 1 or menuChoice == 3 or menuChoice == 6:
+            child = self.uniformCrossover(ind1, ind2)
+        else:
+            child = self.cycleCrossover(ind1, ind2)
+        return child
+
+    def applyMutation(self, menuChoice, individual):
+        """
+        Applies the appropriate mutation according to menu selection
+        :param menuChoice: number indicating which of the preset configurations was selected
+        :param individual: individual to be mutated
+        """
+        if menuChoice == 1 or menuChoice == 3 or menuChoice == 4:
+            self.reciprocalExchangeMutation(individual)
+        else:
+            self.scrambleMutation(individual)
 
     def GAStep(self):
         """
@@ -365,18 +408,69 @@ class BasicTSP:
             self.GAStep()
             self.iteration += 1
 
-        print ("Total iterations: ",self.iteration)
-        print ("Best Solution: ", self.best.getFitness())
+        print("Total iterations: ", self.iteration)
+        print("Best Solution: ", self.best.getFitness())
+
+
+def menu():
+    initialSolution = 'Random'
+    uCrossover = 'Uniform Crossover'
+    cCrossover = 'Cycle Crossover'
+    recMutation = 'Reciprocal Exchange'
+    scrambleMutation = 'Scramble Mutation'
+    randSel = 'Random Selection'
+    rouletteSel = 'Roulette Wheel'
+    bestAndSecondBest = 'Best and second best candidates'
+
+    item1 = '1 -> Initial Solution: {0};\t Crossover: {1};\t Mutation: {2};\t Selection: {3}'.format(initialSolution,
+                                                                                                     uCrossover,
+                                                                                                     recMutation,
+                                                                                                     randSel)
+    item2 = '2 -> Initial Solution: {0};\t Crossover: {1};\t Mutation: {2};\t Selection: {3}'.format(initialSolution,
+                                                                                                     cCrossover,
+                                                                                                     scrambleMutation,
+                                                                                                     randSel)
+    item3 = '3 -> Initial Solution: {0};\t Crossover: {1};\t Mutation: {2};\t Selection: {3}'.format(initialSolution,
+                                                                                                     uCrossover,
+                                                                                                     recMutation,
+                                                                                                     rouletteSel)
+    item4 = '4 -> Initial Solution: {0};\t Crossover: {1};\t Mutation: {2};\t Selection: {3}'.format(initialSolution,
+                                                                                                     cCrossover,
+                                                                                                     recMutation,
+                                                                                                     rouletteSel)
+    item5 = '5 -> Initial Solution: {0};\t Crossover: {1};\t Mutation: {2};\t Selection: {3}'.format(initialSolution,
+                                                                                                     cCrossover,
+                                                                                                     scrambleMutation,
+                                                                                                     rouletteSel)
+    item6 = '6 -> Initial Solution: {0};\t Crossover: {1};\t Mutation: {2};\t Selection: {3}'.format(initialSolution,
+                                                                                                     uCrossover,
+                                                                                                     scrambleMutation,
+                                                                                                     bestAndSecondBest)
+    menuItems = ['Please select from preset configurations [1-6]:\n', item1, item2, item3, item4, item5, item6]
+
+    for i in range(0, len(menuItems)):
+        print(menuItems[i])
+    BasicTSP.menuChoice = int(input("Configuration to be run: "))
+
+    if BasicTSP.menuChoice < 1 or BasicTSP.menuChoice > 6:
+        print('Invalid menu selection. Please select a valid configuration number between 1 and 6')
+        menu()
+    return BasicTSP.menuChoice
+
+
+menuChoice = 0
 
 if len(sys.argv) < 2:
-    print ("Error - Incorrect input")
-    print ("Expecting python BasicTSP.py [instance] ")
+    print("Error - Incorrect input")
+    print("Expecting python BasicTSP.py [instance] ")
     sys.exit(0)
 
-
 if __name__ == '__main__':
+    menu()
+
     problem_file = sys.argv[1]
 
     ga = BasicTSP(sys.argv[1], 100, 0.1, 300)
-    #ga = BasicTSP(sys.argv[1], 10, 0.1, 300)
+
+    # ga = BasicTSP(sys.argv[1], 10, 0.1, 300)
     ga.search()
