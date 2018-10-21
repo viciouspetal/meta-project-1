@@ -115,12 +115,15 @@ class BasicTSP:
 
         :return: list of ranked individuals from highest rank to lowest
         """
+        # sorting of the population by fitness from highest to lowest
         ranks = sorted(self.matingPool, key=lambda x:x.fitness, reverse=True)
+
+        # computing and assigning rank values
         for i in range(0, len(ranks)):
             ranks[i].setSelectionRank(self.popSize-i)
-            #print('Fitness for element of {0} is {1}, rank: {2}'.format(ranks[i], ranks[i].fitness, ranks[i].selectionRank))
+            # print('Fitness for element of {0} is {1}, rank: {2}'.format(ranks[i], ranks[i].fitness, ranks[i].selectionRank))
 
-        pass
+        return ranks[0], ranks[1]
 
     def computeTotalFitness(self):
         """
