@@ -488,8 +488,5 @@ if __name__ == '__main__':
     menu()
 
     problem_file = sys.argv[1]
-
     ga = BasicTSP(sys.argv[1], 100, 0.1, 300)
-
-    # ga = BasicTSP(sys.argv[1], 10, 0.1, 300)
     ga.search()
