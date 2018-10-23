@@ -106,6 +106,25 @@ class BasicTSP:
 
         return [indA, indB]
 
+    def getFitnessRank(self):
+        """
+        Assigns ranks to the individuals in the population.
+        First the population is sorted according to its fitness, with the individual with the highest fitness
+        acquiring the highest rank. Then, each individual is assigned a rank from highest to lowest, with highest rank
+        being equal to the size of the population.
+
+        :return: list of ranked individuals from highest rank to lowest
+        """
+        # sorting of the population by fitness from highest to lowest
+        ranks = sorted(self.matingPool, key=lambda x:x.fitness, reverse=True)
+
+        # computing and assigning rank values
+        for i in range(0, len(ranks)):
+            ranks[i].setSelectionRank(self.popSize-i)
+            # print('Fitness for element of {0} is {1}, rank: {2}'.format(ranks[i], ranks[i].fitness, ranks[i].selectionRank))
+
+        return ranks[0], ranks[1]
+
     def computeTotalFitness(self):
         """
         Since the objective is to minimize the cost function, which is the distance between cities in the final solution
@@ -359,7 +378,7 @@ class BasicTSP:
         elif menuChoice == 3 or menuChoice == 4 or menuChoice == 5:
             inds = self.rouletteWheel()
         else:
-            inds = None  # TODO need to get the best and 2nd best candidate selection
+            inds = self.getFitnessRank()  # TODO need to get the best and 2nd best candidate selection
         return [inds[0], inds[1]]
 
     def applyCrossover(self, menuChoice, ind1, ind2):
@@ -469,8 +488,5 @@ if __name__ == '__main__':
     menu()
 
     problem_file = sys.argv[1]
-
     ga = BasicTSP(sys.argv[1], 100, 0.1, 300)
-
-    # ga = BasicTSP(sys.argv[1], 10, 0.1, 300)
     ga.search()
