@@ -17,6 +17,12 @@ python TSP_toStudents.py ./dataset/inst-13.tsp
 python3 TSP_toStudents.py ./dataset/inst-16.tsp
 ```
 
+First, you will be asked to select which configuration would you like to run, as per assignment brief. 
+Please type in a numeric value, as displayed in the menu printed, e.g. use "6" and not "six".
+
+Selecting a number other than those displayed will result in an error message being printed to the console 
+and the menu being displayed again for the selection to be made.
+
 ### Gathering data for additional experiments
 In order to gather all the data for additional experiments run
 ```
